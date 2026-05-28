@@ -10,7 +10,7 @@ const connection = mysql.createConnection({
     host: process.env.DB_HOST || '127.0.0.1',
     user: process.env.DB_USER || 'wanda',
     password: process.env.DB_PASSWORD || 'raspberrypi',
-    database: process.env.DB_NAME || 'database_tps_oee_roller_arm',
+    database: process.env.DB_NAME || 'atabase_tps_roller_arm',
     port: process.env.DB_PORT || 3306
 });
 
