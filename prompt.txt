@@ -1,7 +1,7 @@
 buatkan untuk create tabel hasil produksi line common_rail_12.
 
 
-name table : tb_prod_common_rail_12
+name table 1 : tb_prod_cr12
 
 idPrimary
 production_group
@@ -13,24 +13,33 @@ loading_time
 cycle_time 
 status (START,STOP,NORMAL,ABNORMAL)
 
+
+name table 2 : tb_prod_cr12_resume
+
+idPrimary
+production_group
+line_prod
+name_part
+actual_pcs
+loading_time
+cycle_time 
+date_prod_start
+date_prod_stop
+time_prod_start
+time_prod_stop
+shift_prod
+total_prod_pcs
+down_time
+note_down_time
+manpower
+status (START,STOP,NORMAL,ABNORMAL)
+
+
+
+
 MISALAKAN PRODUKSI BERJALAN DI TANGGAL 17 JUNI 2025 maka actual_pcs akan selalu bertambah
 
 sesuai hasil produksi pada saat itu, misalkan 1 - 325 pcs per shift
 - shift 1, jam 7.10 - 19.50
 - shift 2, jam 19.50 - 7.10 (di tanggal yang berbeda karena sudah besok nya)
-
-date_prod_start
-date_prod_stop
-time_prod_start
-time_prod_stop
-total_prod_pcs
-cycle_time
-loading_time
-down_time
-note_down_time
-manpower
-
-
-
-
 
