@@ -42,4 +42,3 @@ MISALAKAN PRODUKSI BERJALAN DI TANGGAL 17 JUNI 2025 maka actual_pcs akan selalu 
 sesuai hasil produksi pada saat itu, misalkan 1 - 325 pcs per shift
 - shift 1, jam 7.10 - 19.50
 - shift 2, jam 19.50 - 7.10 (di tanggal yang berbeda karena sudah besok nya)
-
