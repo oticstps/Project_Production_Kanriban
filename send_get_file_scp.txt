@@ -1,0 +1,1 @@
+scp serveroticstps@172.27.6.180:/home/serveroticstps/on/Project_Dashboard_TPS/d-kanriban/d-program/saga_claude.js D:/on/
