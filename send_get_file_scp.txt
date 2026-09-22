@@ -1,1 +1,7 @@
+dari laptop ke jetson:
+
 scp serveroticstps@172.27.6.180:/home/serveroticstps/on/Project_Dashboard_TPS/d-kanriban/d-program/saga_claude.js D:/on/
+
+dari laptop ke jetson:
+
+scp D:/on/saga_claude.js serveroticstps@172.27.6.180:/home/serveroticstps/on/Project_Dashboard_TPS/d-kanriban/d-program/
