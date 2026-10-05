@@ -1,0 +1,142 @@
+# Cara Copy Semua Tabel dari 2 Database ke Database Master
+
+Berikut beberapa cara yang bisa Anda gunakan. Saya asumsikan Anda menggunakan **MySQL/MariaDB** di localhost.
+
+---
+
+## 🔧 Opsi 1: Menggunakan `mysqldump` (Paling Mudah & Aman)
+
+### Step 1: Backup database sumber
+
+```bash
+# Backup database 1
+mysqldump -u root -p database_tps_energy_listrik > db1_backup.sql
+
+# Backup database 2
+mysqldump -u root -p database_tps_produksi > db2_backup.sql
+```
+
+### Step 2: Buat database tujuan
+
+```sql
+CREATE DATABASE IF NOT EXISTS database_tps_master;
+```
+
+### Step 3: Import ke database tujuan
+
+```bash
+# Import database 1 ke master
+mysql -u root -p database_tps_master < db1_backup.sql
+
+# Import database 2 ke master
+mysql -u root -p database_tps_master < db2_backup.sql
+```
+
+⚠️ **Catatan:** Jika ada nama tabel yang sama di kedua database, tabel dari database 2 akan **menimpa** tabel dari database 1.
+
+---
+
+## 🔧 Opsi 2: Menggunakan Script Bash Otomatis
+
+Script ini otomatis meng-copy semua tabel dari kedua database ke master:
+
+```bash
+#!/bin/bash
+
+USER="root"
+PASS="password_anda"
+SRC1="database_tps_energy_listrik"
+SRC2="database_tps_produksi"
+DEST="database_tps_master"
+
+# Buat database tujuan
+mysql -u$USER -p$PASS -e "CREATE DATABASE IF NOT EXISTS $DEST;"
+
+# Fungsi untuk copy semua tabel
+copy_tables() {
+    local SRC=$1
+    TABLES=$(mysql -u$USER -p$PASS -N -e "SHOW TABLES FROM $SRC;")
+    
+    for TABLE in $TABLES; do
+        echo "Copying $SRC.$TABLE -> $DEST.$TABLE"
+        
+        # Buat struktur tabel
+        mysqldump -u$USER -p$PASS --no-data $SRC $TABLE | \
+            mysql -u$USER -p$PASS $DEST
+        
+        # Copy data
+        mysqldump -u$USER -p$PASS --no-create-info $SRC $TABLE | \
+            mysql -u$USER -p$PASS $DEST
+    done
+}
+
+copy_tables $SRC1
+copy_tables $SRC2
+
+echo "Selesai!"
+```
+
+Simpan sebagai `copy_db.sh`, lalu:
+```bash
+chmod +x copy_db.sh
+./copy_db.sh
+```
+
+---
+
+## 🔧 Opsi 3: Pure SQL (Tanpa mysqldump)
+
+Jika ingin pakai SQL saja, Anda perlu generate query `INSERT ... SELECT` (tapi ini **tidak bisa langsung cross-database kecuali masih di server yang sama**):
+
+```sql
+-- Buat tabel di database master (harus sama strukturnya)
+CREATE TABLE database_tps_master.nama_tabel LIKE database_tps_energy_listrik.nama_tabel;
+INSERT INTO database_tps_master.nama_tabel 
+SELECT * FROM database_tps_energy_listrik.nama_tabel;
+```
+
+Metode ini harus dilakukan **per tabel** dan strukturnya harus dibuat manual dulu.
+
+---
+
+## 🔧 Opsi 4: Kalau Nama Tabel Bentrok
+
+Kalau ada tabel dengan nama sama di kedua database dan Anda ingin keduanya tetap ada, tambahkan prefix:
+
+```bash
+# Tambahkan prefix saat import
+sed 's/^CREATE TABLE/CREATE TABLE energy_/' db1_backup.sql | mysql -u root -p database_tps_master
+sed 's/^CREATE TABLE/CREATE TABLE produksi_/' db2_backup.sql | mysql -u root -p database_tps_master
+```
+
+---
+
+## ✅ Verifikasi Hasil
+
+```sql
+USE database_tps_master;
+SHOW TABLES;
+```
+
+Atau hitung jumlah tabel dari tiap database sumber untuk perbandingan:
+
+```sql
+SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'database_tps_energy_listrik';
+SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'database_tps_produksi';
+SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'database_tps_master';
+```
+
+---
+
+## 💡 Rekomendasi
+
+- **Untuk sekali pakai**: gunakan **Opsi 1** (`mysqldump`) — paling cepat & aman.
+- **Untuk rutin/otomatis**: gunakan **Opsi 2** (script bash).
+- **Jika ada nama tabel bentrok & ingin dipisah**: gunakan **Opsi 4**.
+
+Kalau Anda mau, saya bisa bantu buatkan script yang lebih spesifik, misalnya:
+- hanya tabel tertentu saja,
+- tabel digabung jadi satu (UNION),
+- atau sinkronisasi berkala (cron job).
+
+Tinggal beri tahu struktur tabelnya. 🙂
